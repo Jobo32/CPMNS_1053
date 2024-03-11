@@ -43,6 +43,21 @@ const schema = buildSchema(`
 	  creator: User
 	  title: String
   }
+  type Catastrophe{
+    id: int
+    country: String
+    city: String
+    province: String
+    cities: String[]
+    type: TypeCatastrophe'
+    area: Double
+    date: Date
+  }
+  type TypeCatastrophe{
+    id: Int
+    name: String
+    description: String
+  }
 `)
 
 
@@ -53,6 +68,8 @@ const rootValue = {
      users: () => DB.objects('User'),
      
      blogs: () => DB.objects('Blog'),
+
+     catastrophe: () => DB.objects('Catastrophe'),
      
      searchBlog: ({ q }) => {
        q = q.toLowerCase()
@@ -83,41 +100,18 @@ const rootValue = {
           // SSE notification
           sse.emitter.emit('new-post', data)
        }
+       
 
        return post
      },
-
-     addUser: ({ name }) => {
+     addUser: ({user}) => {
       let newUser = null
-  
-      let data = {
-          name: name,
-          passwd: 'XXX'
-      }
-  
-      DB.write( () => { newUser = DB.create('User', data) })
-
-      sse.emitter.emit('new-user', data)
-  
-      return data
-    },
-
-    searchPost: ({ blogTitle}) => {
-      const blog = DB.objects('Blog').find(blog => blog.title === blogTitle);
-
-      if (!blog) {
-          throw new Error('Blog no encontrado');
-      }
-
-      const posts = DB.objects('Post').filter(post => {
-          return post.blog === blog && post.title.toLowerCase().includes(q.toLowerCase());
-      });
-
-      return posts;
-  }
-    
+      DB.write( () => { newUser = DB.create('User',{user: user})})
+      return user
+     }
 }
 
 exports.root   = rootValue
 exports.schema = schema
 exports.sse    = sse
+
