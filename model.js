@@ -30,9 +30,34 @@ let BlogSchema = {
    }
 }
 
+let CatastropheSchema = {
+  name: 'Catastrophe',
+  primaryKey: 'id',
+  properties: {
+     id: 'int',
+     country: 'string',
+     city: 'string',
+     province: 'string',
+     cities: 'string[]', // Array de strings para las ciudades
+     type: 'TypeCatastrophe', // Objeto de la clase TypeCatastrophe
+     area: 'double',
+     date: 'date'
+  }
+};
+
+let TypeCatastropheSchema = {
+  name: 'TypeCatastrophe',
+  primaryKey: 'id',
+  properties: {
+     id: 'int',
+     name: 'string',
+     description: 'string'
+  }
+};
+
 // // // MODULE EXPORTS
 
-let config = {path: './data/blogs.realm', schema: [PostSchema, UserSchema, BlogSchema]}
+let config = {path: './data/blogs.realm', schema: [PostSchema, UserSchema, BlogSchema,CatastropheSchema,TypeCatastropheSchema]}
 
 exports.getDB = async () => await Realm.open(config)
 
@@ -46,7 +71,7 @@ if (process.argv[1] == __filename){ //TESTING PART
 
       let DB = new Realm({
         path: './data/blogs.realm',
-        schema: [PostSchema, UserSchema, BlogSchema]
+        schema: [PostSchema, UserSchema, BlogSchema,CatastropheSchema,TypeCatastropheSchema]
       })
      
       DB.write(() => {
@@ -60,15 +85,34 @@ if (process.argv[1] == __filename){ //TESTING PART
                                         content: 'esto es una prueba de motos',
                                         creator: user, 
                                         timestamp: new Date()})
+                                        // Primero, creamos un objeto TypeCatastrophe
+        let typeCatastrophe = DB.create('TypeCatastrophe', {
+                                                                id: 1,
+                                                                name: 'Terremoto',
+                                                                description: 'Un movimiento brusco de la Tierra causado por la liberación de energía acumulada debido a tensiones geológicas.'});
 
-        console.log('Inserted objects', user, blog, post)
+      // Luego, creamos un objeto Catastrophe
+      let catastrophe = DB.create('Catastrophe', {
+                                                      id: 101,
+                                                      country: 'España',
+                                                      city: 'Castellón de la Plana',
+                                                      province: 'Castellón',
+                                                      cities: ['Castellón de la Plana', 'Villarreal', 'Burriana'],
+                                                      type: typeCatastrophe, // Referenciamos el objeto TypeCatastrophe creado previamente
+                                                      area: 120.5,
+                                                      date: new Date('2024-03-11T18:02:59+01:00') });// La fecha y hora actual
+ 
+
+        
+
+      console.log('Inserted objects', user, blog, post,typeCatastrophe,catastrophe)
       })
       DB.close()
       process.exit()
   }
   else { //consultar la BD
 
-      Realm.open({ path: './data/blogs.realm' , schema: [PostSchema, UserSchema, BlogSchema] }).then(DB => {
+      Realm.open({ path: './data/blogs.realm' , schema: [PostSchema, UserSchema, BlogSchema,CatastropheSchema,TypeCatastropheSchema ] }).then(DB => {
         let users = DB.objects('User')
         users.forEach(x => console.log(x.name))
         let blog = DB.objectForPrimaryKey('Blog', 'Todo Motos')
@@ -79,3 +123,4 @@ if (process.argv[1] == __filename){ //TESTING PART
       })
   }
 }
+
