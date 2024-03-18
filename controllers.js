@@ -17,59 +17,48 @@ sse.start()
 
 const schema = buildSchema(`
   type Query {
-    hello: String
-    users: [User]
-    blogs: [Blog]
-    searchBlog(q:String!):[Blog]
-    posts(blogId:ID!):[Post]
-    searchPost(blogId:ID!, q:String!):[Post]
-  }
-  type Mutation {
-    addUser(name:String!):User!
-    addBlog(title:String!,creator:ID!):Blog!
-    addPost(title:String!,content:String!,authorId:ID!,blogId:ID!):Post
-  }
-  type User{
-	  name: String
-  }
-
-  type Post{
-	  title: String
-	  content: String
-	  author: User
-	  blog: Blog
-  }
-  type Blog{
-	  creator: User
-	  title: String
+    catastrophe: [Catastrophe]
+    getInfoCatastropheById(idCatastrophe: ID!): Catastrophe
   }
   type Catastrophe{
-    id: int
+    id: ID
     country: String
     city: String
     province: String
-    cities: String[]
-    type: TypeCatastrophe'
-    area: Double
-    date: Date
+    cities: [String]
+    type: TypeCatastrophe
+    area: Float
+    date: String
   }
   type TypeCatastrophe{
-    id: Int
+    id: ID
     name: String
     description: String
+  }
+  type ActionProtocol {
+    id: ID
+    type: TypeCatastrophe
+    description: String
+    examplesofcatastrophe: [String]
+  }
+  type InsuranceCompany{
+    id: ID
+    type: String
+    name: String
+    address: String
+    email: String
   }
 `)
 
 
 const rootValue = {
-
+    catastrophe: () => DB.objects('Catastrophe'),
+/*
      hello: () => "Hello World!",
 
      users: () => DB.objects('User'),
      
      blogs: () => DB.objects('Blog'),
-
-     catastrophe: () => DB.objects('Catastrophe'),
      
      searchBlog: ({ q }) => {
        q = q.toLowerCase()
@@ -100,18 +89,55 @@ const rootValue = {
           // SSE notification
           sse.emitter.emit('new-post', data)
        }
-       
 
        return post
      },
-     addUser: ({user}) => {
+
+     addUser: ({ name }) => {
       let newUser = null
-      DB.write( () => { newUser = DB.create('User',{user: user})})
-      return user
-     }
+  
+      let data = {
+          name: name,
+          passwd: 'XXX'
+      }
+  
+      DB.write( () => { newUser = DB.create('User', data) })
+
+      sse.emitter.emit('new-user', data)
+  
+      return data
+    },
+
+    searchPost: ({ blogTitle}) => {
+      const blog = DB.objects('Blog').find(blog => blog.title === blogTitle);
+
+      if (!blog) {
+          throw new Error('Blog no encontrado');
+      }
+
+      const posts = DB.objects('Post').filter(post => {
+          return post.blog === blog && post.title.toLowerCase().includes(q.toLowerCase());
+      });
+
+      return posts;
+    }, */
+    getInfoCatastropheById: ({ idCatastrophe }) => {
+      const catastrophe = DB.objectForPrimaryKey('Catastrophe', idCatastrophe)
+      // Verifica si se encontró la catástrofe
+      if (!catastrophe) {
+          throw new Error('Catástrofe no encontrada');
+      }
+      console.log(catastrophe)
+      // Devuelve la información de la catástrofe encontrada
+      return catastrophe;
+    }
+  
+    
+    
+    
+    
 }
 
 exports.root   = rootValue
 exports.schema = schema
 exports.sse    = sse
-
