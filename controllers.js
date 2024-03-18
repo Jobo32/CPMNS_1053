@@ -18,10 +18,15 @@ sse.start()
 const schema = buildSchema(`
   type Query {
     catastrophe: [Catastrophe]
-    getInfoCatastropheById(idCatastrophe: ID!): Catastrophe
+    getInfoCatastropheById(idCatastrophe: Int!): Catastrophe
+  }
+  type TypeCatastrophe{
+    id: Int
+    name: String
+    description: String
   }
   type Catastrophe{
-    id: ID
+    id: Int
     country: String
     city: String
     province: String
@@ -30,19 +35,14 @@ const schema = buildSchema(`
     area: Float
     date: String
   }
-  type TypeCatastrophe{
-    id: ID
-    name: String
-    description: String
-  }
+  
   type ActionProtocol {
-    id: ID
-    type: TypeCatastrophe
+    id: Int
     description: String
-    examplesofcatastrophe: [String]
+    type: TypeCatastrophe
   }
   type InsuranceCompany{
-    id: ID
+    id: Int
     type: String
     name: String
     address: String

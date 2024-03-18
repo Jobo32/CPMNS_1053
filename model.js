@@ -83,7 +83,7 @@ if (process.argv[1] == __filename){ //TESTING PART
                                 date: new Date('2024-03-11T18:02:59+01:00') });// La fecha y hora actual
 
         let actionProtocol = DB.create('ActionProtocol', {
-                                id: 101,
+                                id: 301,
                                 name: 'string',
                                 type: typeCatastrophe, // Referenciamos el objeto TypeCatastrophe creado previamente
                                 description: 'Descripción Test' });
