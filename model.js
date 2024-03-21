@@ -60,7 +60,7 @@ let UserSchema = {
 }
 // // // MODULE EXPORTS
 
-let config = {path: './data/cpmns.realm', schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema]}
+let config = {path: './data/cpmns.realm', schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, UserSchema]}
 
 exports.getDB = async () => await Realm.open(config)
 
