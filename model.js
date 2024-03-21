@@ -1,5 +1,6 @@
 const Realm = require('realm')
-const { User } = require('realm/dist/bundle')
+//const { User } = require('realm/dist/bundle')
+
 let TypeCatastropheSchema = {
   name: 'TypeCatastrophe',
   primaryKey: 'id',
@@ -78,27 +79,43 @@ if (process.argv[1] == __filename){ //TESTING PART
       })
      
       DB.write(() => {
-        let typeCatastrophe = DB.create('TypeCatastrophe', {
+        let typeCatastrophe1 = DB.create('TypeCatastrophe', {
                                           id: 1,
                                           name: 'Terremoto',
                                           description: 'Un movimiento brusco de la Tierra causado por la liberación de energía acumulada debido a tensiones geológicas.'});
-
-
+        let typeCatastrophe2 = DB.create('TypeCatastrophe', {
+                                          id: 2,
+                                          name: 'Sunami',
+                                          description: 'Un tsunami es una serie de olas marinas generadas por un evento perturbador' });
         let catastrophe = DB.create('Catastrophe', {
                                 id: 101,
                                 country: 'España',
                                 city: 'Castellón de la Plana',
                                 province: 'Castellón',
                                 cities: ['Castellón de la Plana', 'Villarreal', 'Burriana'],
-                                type: typeCatastrophe, // Referenciamos el objeto TypeCatastrophe creado previamente
+                                type: typeCatastrophe1, // Referenciamos el objeto TypeCatastrophe creado previamente
                                 area: 120.5,
-                                date: new Date('2024-03-11T18:02:59+01:00') });// La fecha y hora actual
+                                date: '2024-03-11T18:02:59+01:00' });// La fecha y hora actual
 
         let actionProtocol = DB.create('ActionProtocol', {
                                 id: 301,
-                                name: 'string',
-                                type: typeCatastrophe, // Referenciamos el objeto TypeCatastrophe creado previamente
-                                description: 'Descripción Test' });
+                                name: 'Protocolo1',
+                                type: typeCatastrophe1, // Referenciamos el objeto TypeCatastrophe creado previamente
+                                description: 'Descripción Test1' } );
+
+        let actionProtocol2 = DB.create('ActionProtocol', {
+                                id: 302, // ID único del nuevo protocolo
+                                name: 'Nuevo Protocolo', // Nombre del nuevo protocolo
+                                    type: typeCatastrophe1, // Tipo de catástrofe asociado al nuevo protocolo
+                                    description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
+                                });
+                                
+         let actionProtocol3 = DB.create('ActionProtocol', {
+                                id: 303, // ID único del nuevo protocolo
+                                name: 'Nuevo Protocolo', // Nombre del nuevo protocolo
+                                    type: typeCatastrophe2, // Tipo de catástrofe asociado al nuevo protocolo
+                                    description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
+                                });
                               
         let insuranceCompany = DB.create('InsuranceCompany', {
                                 id: 201,
@@ -114,7 +131,7 @@ if (process.argv[1] == __filename){ //TESTING PART
                                 year: '2000',
                                 preferences: ['preferencia1', 'preferencia2']
         })
-        console.log('Inserted objects', typeCatastrophe, catastrophe, actionProtocol, insuranceCompany, userSchema)
+        console.log('Inserted objects', typeCatastrophe1, catastrophe, actionProtocol, actionProtocol2,actionProtocol3,insuranceCompany, userSchema)
       })
       DB.close()
       process.exit()

@@ -13,12 +13,28 @@ model.getDB().then(db => {DB = db})
 //Notifications
 const sse  = require('./utils/notifications')
 sse.start()
-
+/*addCatastrophe(id: Int
+      country: String
+      city: String
+      province: String
+      cities: [String]
+      type: TypeCatastrophe
+      area: Float
+      date: String): Catastrophe*/ //Añadir a query otro dia
 
 const schema = buildSchema(`
   type Query {
     catastrophe: [Catastrophe]
+    insuranceCompanies: [InsuranceCompany]
+    actionProtocols: [ActionProtocol]
+    typecatastrophe: [TypeCatastrophe]
+    users: [User]
+    
     getInfoCatastropheById(idCatastrophe: Int!): Catastrophe
+    
+    getActionProtocolsByType(typeId: Int!): [ActionProtocol]
+    
+    
   }
   type TypeCatastrophe{
     id: Int
@@ -61,6 +77,11 @@ const schema = buildSchema(`
 
 const rootValue = {
     catastrophe: () => DB.objects('Catastrophe'),
+    typecatastrophe: () => DB.objects('TypeCatastrophe'),
+    users: () => DB.objects('User'),
+    insuranceCompanies: () => DB.objects('InsuranceCompany'),
+    actionProtocols: () => DB.objects('ActionProtocol'),
+
 /*
      hello: () => "Hello World!",
 
@@ -138,7 +159,36 @@ const rootValue = {
       console.log(catastrophe)
       // Devuelve la información de la catástrofe encontrada
       return catastrophe;
-    }
+    },  
+    getActionProtocolsByType: ({ typeId }) => {
+      return DB.objects('ActionProtocol').filter(protocol => protocol.type.id === typeId);
+    },/*
+    addCatastrophe: ({ country, city, province, cities, typeId, area, date }) => {
+      let newCatastrophe = null;
+  
+      // Crear un nuevo objeto de catástrofe con los datos proporcionados
+      let data = {
+          id: Math.random()+1,
+          country: country,
+          city: city,
+          province: province,
+          cities: cities,
+          type: DB.objectForPrimaryKey('TypeCatastrophe', typeId), // Obtener el objeto de tipo de catástrofe por su ID
+          area: area,
+          date: date
+      };
+  
+      // Escribir el nuevo objeto de catástrofe en la base de datos
+      DB.write(() => {
+          newCatastrophe = DB.create('Catastrophe', data);
+      });
+  
+      // Emitir un evento de nueva catástrofe utilizando SSE
+      sse.emitter.emit('new-catastrophe', newCatastrophe);
+  
+      return newCatastrophe;
+  }
+  */
   
     
     
