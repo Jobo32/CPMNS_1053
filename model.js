@@ -1,4 +1,5 @@
 const Realm = require('realm')
+const { User } = require('realm/dist/bundle')
 let TypeCatastropheSchema = {
   name: 'TypeCatastrophe',
   primaryKey: 'id',
@@ -19,8 +20,8 @@ let CatastropheSchema = {
      province: 'string',
      cities: 'string[]', // Array de strings para las ciudades
      type: 'TypeCatastrophe', // Objeto de la clase TypeCatastrophe
-     area: 'double',
-     date: 'date'
+     area: 'float',
+     date: 'string'
   }
 }
 
@@ -30,9 +31,9 @@ let ActionProtocolSchema = {
   primaryKey: 'id',
   properties: {
      id: 'int',
-     name: 'string',
      type: 'TypeCatastrophe',
-     description: 'string'
+     description: 'string',
+     examplesOfCatastrophe: 'string[]'
   }
 }
 let InsuranceCompanySchema = {
@@ -44,6 +45,17 @@ let InsuranceCompanySchema = {
      name: 'string',
      address: 'string',
      email: 'string'
+  }
+}
+let UserSchema = {
+  name: 'User',
+  primaryKey: 'id',
+  properties: {
+    id: 'int',
+    address: 'string',
+    email: 'string',
+    year: 'string',
+    preferences: 'string[]'
   }
 }
 // // // MODULE EXPORTS
@@ -62,7 +74,7 @@ if (process.argv[1] == __filename){ //TESTING PART
 
       let DB = new Realm({
         path: './data/cpmns.realm',
-        schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema]
+        schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, UserSchema]
       })
      
       DB.write(() => {
@@ -94,15 +106,22 @@ if (process.argv[1] == __filename){ //TESTING PART
                                 name: 'Nombre de la compañía',
                                 address: 'Dirección de la compañía',
                                 email: 'correo@compania.com' });
-
-        console.log('Inserted objects', typeCatastrophe,catastrophe, actionProtocol, insuranceCompany)
+                              
+        let userSchema = DB.create('User', {
+                                id: 401,
+                                address: 'Paseo de la Universidad',
+                                email: 'correo@ejemplo.com' ,
+                                year: '2000',
+                                preferences: ['preferencia1', 'preferencia2']
+        })
+        console.log('Inserted objects', typeCatastrophe, catastrophe, actionProtocol, insuranceCompany, userSchema)
       })
       DB.close()
       process.exit()
   }
   else { //consultar la BD
 
-      Realm.open({ path: './data/cpmns.realm' , schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema] }).then(DB => {
+      Realm.open({ path: './data/cpmns.realm' , schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, UserSchema] }).then(DB => {
         let users = DB.objects('Catastrophe')
         users.forEach(x => console.log(x.country))
         DB.close()

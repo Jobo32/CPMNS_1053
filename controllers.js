@@ -40,6 +40,7 @@ const schema = buildSchema(`
     id: Int
     description: String
     type: TypeCatastrophe
+    examplesOfCatastrophe: [String]
   }
   type InsuranceCompany{
     id: Int
@@ -47,6 +48,13 @@ const schema = buildSchema(`
     name: String
     address: String
     email: String
+  }
+  type User{
+    id: Int,
+    address: String,
+    email: String,
+    year: String,
+    preferences: [String]
   }
 `)
 
