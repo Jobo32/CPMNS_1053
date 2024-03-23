@@ -13,14 +13,6 @@ model.getDB().then(db => {DB = db})
 //Notifications
 const sse  = require('./utils/notifications')
 sse.start()
-/*addCatastrophe(id: Int
-      country: String
-      city: String
-      province: String
-      cities: [String]
-      type: TypeCatastrophe
-      area: Float
-      date: String): Catastrophe*/ //Añadir a query otro dia
 
 const schema = buildSchema(`
   type Query {
@@ -34,7 +26,17 @@ const schema = buildSchema(`
     
     getActionProtocolsByType(typeId: Int!): [ActionProtocol]
     
-    
+  }
+  type Mutation{
+    createOrReplacePreferencesOfAlert(userId: Int, preferenceId: Int, province: String, idtypeCatastrophe: Int): Preference
+    newCatastropheAlert(id: Int
+      country: String
+      city: String
+      province: String
+      cities: [String]
+      idtype: Int
+      area: Float
+      date: String): Catastrophe
   }
   type TypeCatastrophe{
     id: Int
@@ -71,6 +73,11 @@ const schema = buildSchema(`
     email: String,
     year: String,
     preferences: [String]
+  }
+  type Preference{
+    id: Int,
+    typeCatastrophe: TypeCatastrophe,
+    province: String
   }
 `)
 
@@ -162,22 +169,23 @@ const rootValue = {
     },  
     getActionProtocolsByType: ({ typeId }) => {
       return DB.objects('ActionProtocol').filter(protocol => protocol.type.id === typeId);
-    },/*
-    addCatastrophe: ({ country, city, province, cities, typeId, area, date }) => {
+    },
+    newCatastropheAlert: ({ id, country,city, province, cities, idtype, area, date }) => {
+      
       let newCatastrophe = null;
-  
+      
       // Crear un nuevo objeto de catástrofe con los datos proporcionados
       let data = {
-          id: Math.random()+1,
+          id: id,
           country: country,
           city: city,
           province: province,
           cities: cities,
-          type: DB.objectForPrimaryKey('TypeCatastrophe', typeId), // Obtener el objeto de tipo de catástrofe por su ID
+          type: DB.objectForPrimaryKey('TypeCatastrophe', idtype), // Obtener el objeto de tipo de catástrofe por su ID
           area: area,
           date: date
       };
-  
+      console.log(data)
       // Escribir el nuevo objeto de catástrofe en la base de datos
       DB.write(() => {
           newCatastrophe = DB.create('Catastrophe', data);
@@ -187,8 +195,23 @@ const rootValue = {
       sse.emitter.emit('new-catastrophe', newCatastrophe);
   
       return newCatastrophe;
-  }
-  */
+    },
+    createOrReplacePreferencesOfAlert: ({userId, preferenceId, province, typeCatastrophe}) => {
+      let newPreference = null;
+      //Se deberia comprobar si existe en ese user dicha preferencia
+      let data = {
+        id: id,
+        typeCatastrophe: DB.objectForPrimaryKey('TypeCatastrophe', idtype),
+        province: province
+      }
+      DB.write(() => {
+        newPreference = DB.create('Preference', data);
+        //DUDA de como meter la nueva preferencia en la entidad de user
+      })
+      return newPreference;
+      //POR IMPLEMENTAR
+    }
+  
   
     
     

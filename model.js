@@ -56,12 +56,21 @@ let UserSchema = {
     address: 'string',
     email: 'string',
     year: 'string',
-    preferences: 'string[]'
+    preferences: 'Preference[]'
+  }
+}
+let PreferenceSchema= {
+  name: 'Preference',
+  primaryKey: 'id',
+  properties:{
+    id: 'int',
+    typeCatastrophe: 'TypeCatastrophe',
+    province: 'string'
   }
 }
 // // // MODULE EXPORTS
 
-let config = {path: './data/cpmns.realm', schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, UserSchema]}
+let config = {path: './data/cpmns.realm', schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, PreferenceSchema,UserSchema]}
 
 exports.getDB = async () => await Realm.open(config)
 
@@ -75,7 +84,7 @@ if (process.argv[1] == __filename){ //TESTING PART
 
       let DB = new Realm({
         path: './data/cpmns.realm',
-        schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, UserSchema]
+        schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, PreferenceSchema, UserSchema]
       })
      
       DB.write(() => {
@@ -106,15 +115,15 @@ if (process.argv[1] == __filename){ //TESTING PART
         let actionProtocol2 = DB.create('ActionProtocol', {
                                 id: 302, // ID único del nuevo protocolo
                                 name: 'Nuevo Protocolo', // Nombre del nuevo protocolo
-                                    type: typeCatastrophe1, // Tipo de catástrofe asociado al nuevo protocolo
-                                    description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
+                                type: typeCatastrophe1, // Tipo de catástrofe asociado al nuevo protocolo
+                                description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
                                 });
                                 
          let actionProtocol3 = DB.create('ActionProtocol', {
                                 id: 303, // ID único del nuevo protocolo
                                 name: 'Nuevo Protocolo', // Nombre del nuevo protocolo
-                                    type: typeCatastrophe2, // Tipo de catástrofe asociado al nuevo protocolo
-                                    description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
+                                type: typeCatastrophe2, // Tipo de catástrofe asociado al nuevo protocolo
+                                description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
                                 });
                               
         let insuranceCompany = DB.create('InsuranceCompany', {
@@ -123,15 +132,21 @@ if (process.argv[1] == __filename){ //TESTING PART
                                 name: 'Nombre de la compañía',
                                 address: 'Dirección de la compañía',
                                 email: 'correo@compania.com' });
+        let preferenceSchema = DB.create('Preference',{
+                                id: 401,
+                                typeCatastrophe: typeCatastrophe1,
+                                province: 'Castellón'
+        });
                               
         let userSchema = DB.create('User', {
                                 id: 401,
                                 address: 'Paseo de la Universidad',
                                 email: 'correo@ejemplo.com' ,
                                 year: '2000',
-                                preferences: ['preferencia1', 'preferencia2']
+                                preferences: [preferenceSchema]
         })
-        console.log('Inserted objects', typeCatastrophe1, catastrophe, actionProtocol, actionProtocol2,actionProtocol3,insuranceCompany, userSchema)
+        
+        console.log('Inserted objects', typeCatastrophe1, catastrophe, actionProtocol, actionProtocol2,actionProtocol3,insuranceCompany, userSchema,preferenceSchema)
       })
       DB.close()
       process.exit()
