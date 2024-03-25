@@ -132,28 +132,28 @@ if (process.argv[1] == __filename){ //TESTING PART
                                 name: 'Nombre de la compañía',
                                 address: 'Dirección de la compañía',
                                 email: 'correo@compania.com' });
-        let preferenceSchema = DB.create('Preference',{
+        let preference1 = DB.create('Preference',{
                                 id: 401,
                                 typeCatastrophe: typeCatastrophe1,
                                 province: 'Castellón'
         });
                               
-        let userSchema = DB.create('User', {
+        let user1 = DB.create('User', {
                                 id: 401,
                                 address: 'Paseo de la Universidad',
                                 email: 'correo@ejemplo.com' ,
                                 year: '2000',
-                                preferences: [preferenceSchema]
+                                preferences: [preference1] 
         })
         
-        console.log('Inserted objects', typeCatastrophe1, catastrophe, actionProtocol, actionProtocol2,actionProtocol3,insuranceCompany, userSchema,preferenceSchema)
+        console.log('Inserted objects', typeCatastrophe1, catastrophe, actionProtocol, actionProtocol2,actionProtocol3,insuranceCompany, user1,preference1)
       })
       DB.close()
       process.exit()
   }
   else { //consultar la BD
 
-      Realm.open({ path: './data/cpmns.realm' , schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, UserSchema] }).then(DB => {
+      Realm.open({ path: './data/cpmns.realm' , schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, UserSchema, PreferenceSchema] }).then(DB => {
         let users = DB.objects('Catastrophe')
         users.forEach(x => console.log(x.country))
         DB.close()

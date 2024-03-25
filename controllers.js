@@ -12,6 +12,7 @@ model.getDB().then(db => {DB = db})
 
 //Notifications
 const sse  = require('./utils/notifications')
+const { forEach } = require('lodash')
 sse.start()
 
 const schema = buildSchema(`
@@ -28,7 +29,7 @@ const schema = buildSchema(`
     
   }
   type Mutation{
-    createOrReplacePreferencesOfAlert(userId: Int, preferenceId: Int, province: String, idtypeCatastrophe: Int): Preference
+    createOrReplacePreferencesOfAlert(userId: Int, preferenceId: Int, newProvince: String, idtypeCatastrophe: Int): Preference
     newCatastropheAlert(id: Int
       country: String
       city: String
@@ -72,7 +73,7 @@ const schema = buildSchema(`
     address: String,
     email: String,
     year: String,
-    preferences: [String]
+    preferences: [Preference]
   }
   type Preference{
     id: Int,
@@ -196,27 +197,40 @@ const rootValue = {
   
       return newCatastrophe;
     },
-    createOrReplacePreferencesOfAlert: ({userId, preferenceId, province, typeCatastrophe}) => {
+    createOrReplacePreferencesOfAlert: ({userId, preferenceId, newProvince, idtypeCatastrophe}) => {
       let newPreference = null;
-      //Se deberia comprobar si existe en ese user dicha preferencia
-      let data = {
-        id: id,
-        typeCatastrophe: DB.objectForPrimaryKey('TypeCatastrophe', idtype),
-        province: province
-      }
-      DB.write(() => {
-        newPreference = DB.create('Preference', data);
-        //DUDA de como meter la nueva preferencia en la entidad de user
+      //comprobar si existe en ese user dicha preferencia
+      var usuario = DB.objects('User').filter(user => user.id === userId)
+      var listaDePreferences = usuario[0].preferences
+      var existePrefrence = false
+      
+      listaDePreferences.forEach(element => {
+        if((element.province == newProvince && element.typeCatastrophe)){
+          existePrefrence=true
+        }
       })
+      
+      if(!existePrefrence){
+        console.log("HOLAAA")
+        let data = {
+          id: preferenceId,
+          typeCatastrophe: DB.objectForPrimaryKey('TypeCatastrophe', idtypeCatastrophe),
+          province: newProvince
+        }
+        console.log(newProvince)
+        console.log(data)
+        console.log("HOLAAA2")
+        
+        DB.write(() => {
+          newPreference = DB.create('Preference', data);
+          usuario[0].preferences.push(newPreference)
+          
+        })
+
+      }
       return newPreference;
-      //POR IMPLEMENTAR
+      
     }
-  
-  
-    
-    
-    
-    
 }
 
 exports.root   = rootValue
