@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+    <title>BLOGS</title>
+
+    <!-- Required Stylesheets -->
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"
+    />
+
+    <!-- Required scripts -->
+    <script src="//cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
+    <script src="//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+  </head>
+  <body>
+    <!-- Our application root element -->
+    <div id="app">
+      <b-container>
+        <b-jumbotron header="CPMNS" lead="Catastrophe Prevention and Management Notification System"></b-jumbotron>
+
+        <b-form-group horizontal :label-cols="4" label="Obtener informacion de catastrofe con id">
+          <b-form-input v-model.trim="query" @keyup.enter="getInfoCatastropheById"></b-form-input>
+        </b-form-group>
+
+      
+        <b-form-group horizontal :label-cols="4" label="Obtener protocolo de actuacion con id">
+          <b-form-input v-model.trim="query"  @keyup.enter="getActionProtocolsByType">
+          </b-form-input>
+        </b-form-group>
+
+      <div v-if="blogs.length>0">
+        <b-card>
+       		<ul>
+        	   <p v-for="blog in blogs">
+                <b-button @click="getPosts(blog.title)">{{blog.title}}</b-button> by {{blog.creator.name}}
+             </p>
+      		</ul>
+        </b-card>
+      </div>
+      <b-card v-else variant="warning">No hay resultados</b-card>
+      
+      <b-card v-if="blogId.length > 0">
+          
+        <p v-if="posts.length==0"> Aún no hay mensajes</p>
+
+          <b-table responsive :items="posts">
+            <template #cell(author)="data">
+               {{ data.value.name }}
+            </template>
+          </b-table>
+
+          <b-form-group>
+             <b-form-input v-model.trim="post" placeholder="Nuevo comentario" 
+                           @keyup.enter="addPost">
+             </b-form-input>
+
+      </b-card>
+
+
+      </b-container>
+    </div>
+
+    <!-- Start running your app -->
+
+    <script>
+      window.app  = new Vue({
+        el: '#app',
+        data: {
+          //Datos para añadir nueva catastrofe
+          idCatastrophe: '',
+          country: "",
+          city: "",
+          province: "",
+          cities: "",
+          type:"",
+          area: "",
+          date: "",
+          //Datos para cambiar preferencias
+          
+        },
+        computed: {
+          showAlert() {
+            return this.name.length > 2 ? true : false
+          }
+        },
+        methods:{
+          getInfoCatastropheById(idCatastrophe){
+            let self = this
+            
+            this.idCatastrophe = idCatastrophe
+
+            let gQL = `query{getInfoCatastropheById(idCatastrophe:"${this.idCatastrophe}"){country cities province area date type{name}}}`
+            //console.log(gQL)
+            fetch('/graphql?query=' + encodeURIComponent(gQL))
+            .then(function(r){return r.json()})
+            .then(function(json){
+              self.posts = json.data.posts //TO BE COMPLETED : only title and content
+            })
+            .catch(function(error){console.log(error)})
+          },
+          getActionProtocolsByType(typeId){
+            let self = this
+            
+            this.typeId = typeId
+
+            let gQL = `query{getActionProtocolsByType(typeId:"${this.typeId}"){description  examplesOfCatastrophe type{name description}}}`
+            //console.log(gQL)
+            fetch('/graphql?query=' + encodeURIComponent(gQL))
+            .then(function(r){return r.json()})
+            .then(function(json){
+              self.posts = json.data.posts //TO BE COMPLETED : only title and content
+            })
+            .catch(function(error){console.log(error)})
+          },
+
+          newCatastropheAlert() {
+            let self = this; // Guardar una referencia al contexto actual de Vue.js
+
+            const query = {
+              query: `mutation NewCatastropheAlert(
+                  id: "${this.idCatastrophe}",
+                  country: "${this.country}",
+                  city: "${this.city}",
+                  province: "${this.province}",
+                  cities: "${this.cities}",
+                  idtype: "${this.idtype}",
+                  area: "${this.area}",
+                  date: "${this.date}",
+              ) {
+                  country
+                  city
+                  province
+                  cities
+                  type {
+                    name
+                    description
+                  }
+                  area
+                  date
+                  }
+              }`,
+            };
+
+            // Realizar una solicitud POST a la ruta '/graphql' con la consulta GraphQL y las variables en el cuerpo
+            fetch('/graphql', {
+                headers: { 'content-type': 'application/json' },
+                method: 'POST',
+                body: JSON.stringify(query),
+            })
+            .then(function(r) {
+                return r.json();
+            })
+            .then(function(json) {
+                // Manejar la respuesta JSON de la solicitud
+                if (json.errors) {
+                    // Si hay errores, mostrar una alerta y registrar los errores en la consola
+                    alert("Error! (mira la consola)");
+                    console.log(json.errors);
+                } else {
+                    // Si no hay errores, mostrar una alerta indicando que la alerta de catástrofe ha sido creada
+                    alert('Alerta de catástrofe creada');
+                }
+            })
+            .catch(function(error) {
+                // Capturar y registrar cualquier error que ocurra durante la solicitud
+                console.log(error);
+            });
+          },
+          addPost(){
+            
+            let self = this
+
+            const query = {
+
+                      query: `mutation {
+                          addPost(
+                             title:    "Sin título ${this.name} ${this.n}",
+                             content:  "${this.post}",
+                             authorId: "user0",
+                             blogId:   "${this.blogId}"
+                          )
+                          {title content author{name}} 
+                      }`
+            }
+            
+            //console.log(query.query)
+
+            fetch('/graphql', {
+                  headers: {'content-type': 'application/json'},
+                  method: 'POST',
+                  body: JSON.stringify(query),
+            })
+            .then(function(r){return r.json()})
+            .then(function(json){
+                  if (json.errors) {
+                    alert("Error! (mira la consola)")
+                    console.log(json.errors)
+                  } else {
+                    self.n++
+                    self.post = ''
+                    //el post se añadirá vía SSE
+                  }
+            })
+            .catch(function(error){console.log(error)})  
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
