@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 
-    <title>BLOGS</title>
+    <title>CPMNS</title>
 
     <!-- Required Stylesheets -->
     <link
@@ -29,47 +29,51 @@
     <!-- Our application root element -->
     <div id="app">
       <b-container>
-        <b-jumbotron header="CPMNS" lead="Catastrophe Prevention and Management Notification System"></b-jumbotron>
-
-        <b-form-group horizontal :label-cols="4" label="Obtener informacion de catastrofe con id">
-          <b-form-input v-model.trim="query" @keyup.enter="getInfoCatastropheById"></b-form-input>
-        </b-form-group>
-
-      
-        <b-form-group horizontal :label-cols="4" label="Obtener protocolo de actuacion con id">
-          <b-form-input v-model.trim="query"  @keyup.enter="getActionProtocolsByType">
+        <b-jumbtron header="CATASTROFES" lead="Demo de catástrofes">
+          <p>HOLAAAAAA</p>
+        </b-jumbtron>
+        <b-form-group horizontal :label-cols="4" label="Obtener informacion de una catastrofe">
+          <b-form-input v-model.trim="idCatastrophe" placeholder="Introduce el id de una catastrofe(Por ejemplo: 101)" 
+                        @keyup.enter="getInfoCatastropheById(idCatastrophe)">
           </b-form-input>
         </b-form-group>
+        <div v-if="catastrophe"><br>
+          <h2>Información de la catástrofe:</h2>
+          <p>País: {{ catastrophe.country }}</p>
+          <p>Ciudades: {{ catastrophe.cities }}</p>
+          <p>Provincia: {{ catastrophe.province }}</p>
+          <p>Área: {{ catastrophe.area }}</p>
+          <p>Fecha: {{ catastrophe.date }}</p>
+          <p>Tipo: {{ catastrophe.type.name }}</p>
+        </div>
 
-      <div v-if="blogs.length>0">
-        <b-card>
-       		<ul>
-        	   <p v-for="blog in blogs">
-                <b-button @click="getPosts(blog.title)">{{blog.title}}</b-button> by {{blog.creator.name}}
-             </p>
-      		</ul>
-        </b-card>
-      </div>
-      <b-card v-else variant="warning">No hay resultados</b-card>
-      
-      <b-card v-if="blogId.length > 0">
+        <b-form-group horizontal :label-cols="4" label="Obtener informacion de un protocolo">
+          <b-form-input v-model.trim="typeId" placeholder="Introduce el id de una tipo de protocolo(Por ejemplo: 1 o 2)" 
+                        @keyup.enter="getActionProtocolsByType(typeId)">
+          </b-form-input>
+        </b-form-group>
+        <div v-if="actionprotocol"><br>
+          <h2>Información del protocolo:</h2>
+          <p>Nombre: {{ actionprotocol.name }}</p>
+          <p>Descripción: {{ actionprotocol.description }}</p>
+          <p>Nombre_Tipo: {{ actionprotocol.type.name }}</p>
+          <p>Descripción Tipo: {{ actionprotocol.type.description }}</p>
+        </div>
+
+        <div>
+          <b-form-group horizontal :label-cols="4" label="Añadir una catástrofe">
+            <b-form-input v-model.trim="idCatastrophePost" placeholder="Nombre" @keyup.enter="newCatastropheAlert"></b-form-input>
+            <b-form-input v-model.trim="country" placeholder="Country" @keyup.enter="newCatastropheAlert"></b-form-input>
+            <b-form-input v-model.trim="city" placeholder="City" @keyup.enter="newCatastropheAlert"></b-form-input>
+            <b-form-input v-model.trim="province" placeholder="Province" @keyup.enter="newCatastropheAlert"></b-form-input>
+            <b-form-input v-model.trim="cities" placeholder="Cities" @keyup.enter="newCatastropheAlert"></b-form-input>
+            <b-form-input v-model.trim="idtype" placeholder="Type" @keyup.enter="newCatastropheAlert"></b-form-input>
+            <b-form-input v-model.trim="area" placeholder="Area" @keyup.enter="newCatastropheAlert"></b-form-input>
+            <b-form-input v-model.trim="date" placeholder="Date" @keyup.enter="newCatastropheAlert"></b-form-input>
           
-        <p v-if="posts.length==0"> Aún no hay mensajes</p>
-
-          <b-table responsive :items="posts">
-            <template #cell(author)="data">
-               {{ data.value.name }}
-            </template>
-          </b-table>
-
-          <b-form-group>
-             <b-form-input v-model.trim="post" placeholder="Nuevo comentario" 
-                           @keyup.enter="addPost">
-             </b-form-input>
-
-      </b-card>
-
-
+          </b-form-group>
+          <button @click="newCatastropheAlert">Crear Catástrofe</button>
+          </div>
       </b-container>
     </div>
 
@@ -79,17 +83,21 @@
       window.app  = new Vue({
         el: '#app',
         data: {
-          //Datos para añadir nueva catastrofe
+          //Datos para getcatastrofe
           idCatastrophe: '',
-          country: "",
-          city: "",
-          province: "",
-          cities: "",
-          type:"",
-          area: "",
-          date: "",
-          //Datos para cambiar preferencias
-          
+          catastrophe: null,
+          //Datos para getActionProtocol
+          typeId: '',
+          actionprotocol:null ,
+          //Datos para añadir nueva Catastrofe
+          idCatastrophePost: null,
+          country: '',
+          city: '',
+          province: '',
+          cities: null,
+          idtype: null, //Id del tipo de catastrofe
+          area: null,
+          date: ''
         },
         computed: {
           showAlert() {
@@ -100,14 +108,15 @@
           getInfoCatastropheById(idCatastrophe){
             let self = this
             
-            this.idCatastrophe = idCatastrophe
+            this.idCatastrophe = idCatastrophe.trim()
 
-            let gQL = `query{getInfoCatastropheById(idCatastrophe:"${this.idCatastrophe}"){country cities province area date type{name}}}`
+            let gQL = `query{getInfoCatastropheById(idCatastrophe:${this.idCatastrophe}){country cities province area date type{name}}}`
             //console.log(gQL)
             fetch('/graphql?query=' + encodeURIComponent(gQL))
             .then(function(r){return r.json()})
             .then(function(json){
-              self.posts = json.data.posts //TO BE COMPLETED : only title and content
+              //console.log(json.data.getInfoCatastropheById)
+              self.catastrophe = json.data.getInfoCatastropheById 
             })
             .catch(function(error){console.log(error)})
           },
@@ -116,12 +125,13 @@
             
             this.typeId = typeId
 
-            let gQL = `query{getActionProtocolsByType(typeId:"${this.typeId}"){description  examplesOfCatastrophe type{name description}}}`
-            //console.log(gQL)
+            let gQL = `query{getActionProtocolsByType(typeId:${this.typeId}){name description  type{name description}}}`
+            console.log(gQL)
             fetch('/graphql?query=' + encodeURIComponent(gQL))
             .then(function(r){return r.json()})
             .then(function(json){
-              self.posts = json.data.posts //TO BE COMPLETED : only title and content
+              //console.log(json.data.getActionProtocolsByType[0])
+              self.actionprotocol = json.data.getActionProtocolsByType[0] 
             })
             .catch(function(error){console.log(error)})
           },
@@ -130,30 +140,31 @@
             let self = this; // Guardar una referencia al contexto actual de Vue.js
 
             const query = {
-              query: `mutation NewCatastropheAlert(
-                  id: "${this.idCatastrophe}",
-                  country: "${this.country}",
-                  city: "${this.city}",
-                  province: "${this.province}",
-                  cities: "${this.cities}",
-                  idtype: "${this.idtype}",
-                  area: "${this.area}",
-                  date: "${this.date}",
-              ) {
-                  country
-                  city
-                  province
-                  cities
-                  type {
-                    name
-                    description
-                  }
-                  area
-                  date
-                  }
-              }`,
+              query: `mutation {
+          newCatastropheAlert(
+          id: ${parseInt(this.idCatastrophePost)},
+          country: "${this.country}",
+          city: "${this.city}",
+          province: "${this.province}",
+          cities: "${this.cities.split(",")}",
+          idtype: ${parseInt(this.idtype)},
+          area: ${parseFloat(this.area)},
+          date: "${this.date}",
+        ) {
+          id
+          country
+          city
+          province
+          cities
+          type {
+            name
+            description
+          }
+          area
+          date
+        }
+      }`,
             };
-
             // Realizar una solicitud POST a la ruta '/graphql' con la consulta GraphQL y las variables en el cuerpo
             fetch('/graphql', {
                 headers: { 'content-type': 'application/json' },
@@ -220,4 +231,31 @@
       })
     </script>
   </body>
+
+
+  
+  <!--query: `
+  mutation {
+    addCatastrophe(
+      id: "${this.idCatastrophePost}",
+      country: "${this.country}",
+      city: "${this.city}",
+      province: "${this.province}",
+      cities: "${this.cities}",
+      idType: "${this.idtype}",
+      area: "${this.area}",
+      date: "${this.date}"
+    ) {
+      id
+      country
+      city
+      province
+      cities
+      idType
+      area
+      date
+    }
+  }
+`-->
 </html>
+
