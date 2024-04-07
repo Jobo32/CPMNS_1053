@@ -74,6 +74,16 @@
           </b-form-group>
           <button @click="newCatastropheAlert">Crear Catástrofe</button>
           </div>
+
+          <div>
+          <b-form-group horizontal :label-cols="4" label="Crear o reemplazar preferencias de alerta">
+            <b-form-input v-model.trim="userId" placeholder="IDUsuario" @keyup.enter="createOrReplacePreferencesOfAlert"></b-form-input>
+            <b-form-input v-model.trim="preferenceId" placeholder="IDPreferencia" @keyup.enter="createOrReplacePreferencesOfAlert"></b-form-input>
+            <b-form-input v-model.trim="newProvince" placeholder="Province" @keyup.enter="createOrReplacePreferencesOfAlert"></b-form-input>
+            <b-form-input v-model.trim="idtypeCatastrophe" placeholder="idtypeCatastrophe" @keyup.enter="createOrReplacePreferencesOfAlert"></b-form-input>
+          </b-form-group>
+          <button @click="createOrReplacePreferencesOfAlert">Crear nueva preferencia</button>
+          </div>
       </b-container>
     </div>
 
@@ -97,7 +107,12 @@
           cities: null,
           idtype: null, //Id del tipo de catastrofe
           area: null,
-          date: ''
+          date: '',
+          //Datos para añadir una nueva preferencia
+          userId: '',
+          preferenceId: '',
+          newProvince: '',
+          idtypeCatastrophe: ''
         },
         computed: {
           showAlert() {
@@ -190,6 +205,52 @@
                 console.log(error);
             });
           },
+
+           createOrReplacePreferencesOfAlert() {
+            let self = this; // Guardar una referencia al contexto actual de Vue.js
+
+            const query = {
+              query: `mutation {
+          createOrReplacePreferencesOfAlert(
+          id: ${parseInt(this.preferenceId)},
+          typeCatastrophe: "${parseInt(this.idtypeCatastrophe)}
+          province: "${this.newProvince}"
+        ) {
+          id
+          type {
+            name
+            description
+          }
+          province
+        }
+      }`,
+            };
+            // Realizar una solicitud POST a la ruta '/graphql' con la consulta GraphQL y las variables en el cuerpo
+            fetch('/graphql', {
+                headers: { 'content-type': 'application/json' },
+                method: 'POST',
+                body: JSON.stringify(query),
+            })
+            .then(function(r) {
+                return r.json();
+            })
+            .then(function(json) {
+                // Manejar la respuesta JSON de la solicitud
+                if (json.errors) {
+                    // Si hay errores, mostrar una alerta y registrar los errores en la consola
+                    alert("Error! (mira la consola)");
+                    console.log(json.errors);
+                } else {
+                    // Si no hay errores, mostrar una alerta indicando que la alerta de catástrofe ha sido creada
+                    alert('Alerta de catástrofe creada');
+                }
+            })
+            .catch(function(error) {
+                // Capturar y registrar cualquier error que ocurra durante la solicitud
+                console.log(error);
+            });
+          },
+          
           addPost(){
             
             let self = this
@@ -232,30 +293,5 @@
     </script>
   </body>
 
-
-  
-  <!--query: `
-  mutation {
-    addCatastrophe(
-      id: "${this.idCatastrophePost}",
-      country: "${this.country}",
-      city: "${this.city}",
-      province: "${this.province}",
-      cities: "${this.cities}",
-      idType: "${this.idtype}",
-      area: "${this.area}",
-      date: "${this.date}"
-    ) {
-      id
-      country
-      city
-      province
-      cities
-      idType
-      area
-      date
-    }
-  }
-`-->
 </html>
 
