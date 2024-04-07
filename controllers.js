@@ -57,9 +57,9 @@ const schema = buildSchema(`
   
   type ActionProtocol {
     id: Int
+    name: String
     description: String
     type: TypeCatastrophe
-    examplesOfCatastrophe: [String]
   }
   type InsuranceCompany{
     id: Int
@@ -90,74 +90,7 @@ const rootValue = {
     insuranceCompanies: () => DB.objects('InsuranceCompany'),
     actionProtocols: () => DB.objects('ActionProtocol'),
 
-/*
-     hello: () => "Hello World!",
 
-     users: () => DB.objects('User'),
-     
-     blogs: () => DB.objects('Blog'),
-     
-     searchBlog: ({ q }) => {
-       q = q.toLowerCase()
-       return DB.objects('Blog').filter(x => x.title.toLowerCase().includes(q))
-     },
-     
-     posts: ({ blogId }) => {
-       return DB.objects('Post').filter(x => x.blog.title == blogId)
-     },
-     
-     addPost: ({title, content, authorId, blogId}) => {
-
-       let post = null
-       let blog = DB.objectForPrimaryKey('Blog', blogId)
-       let auth = DB.objectForPrimaryKey('User', authorId)
-       
-       if (blog && auth){
-          let data = {
-                       title: title,
-                       content: content,
-                       author: auth,
-                       blog: blog,
-                       timestamp: new Date()
-                      }
-
-          DB.write( () => { post = DB.create('Post', data) }) 
-
-          // SSE notification
-          sse.emitter.emit('new-post', data)
-       }
-
-       return post
-     },
-
-     addUser: ({ name }) => {
-      let newUser = null
-  
-      let data = {
-          name: name,
-          passwd: 'XXX'
-      }
-  
-      DB.write( () => { newUser = DB.create('User', data) })
-
-      sse.emitter.emit('new-user', data)
-  
-      return data
-    },
-
-    searchPost: ({ blogTitle}) => {
-      const blog = DB.objects('Blog').find(blog => blog.title === blogTitle);
-
-      if (!blog) {
-          throw new Error('Blog no encontrado');
-      }
-
-      const posts = DB.objects('Post').filter(post => {
-          return post.blog === blog && post.title.toLowerCase().includes(q.toLowerCase());
-      });
-
-      return posts;
-    }, */
     getInfoCatastropheById: ({ idCatastrophe }) => {
       const catastrophe = DB.objectForPrimaryKey('Catastrophe', idCatastrophe)
       // Verifica si se encontró la catástrofe
@@ -211,15 +144,12 @@ const rootValue = {
       })
       
       if(!existePrefrence){
-        console.log("HOLAAA")
+        
         let data = {
           id: preferenceId,
           typeCatastrophe: DB.objectForPrimaryKey('TypeCatastrophe', idtypeCatastrophe),
           province: newProvince
         }
-        console.log(newProvince)
-        console.log(data)
-        console.log("HOLAAA2")
         
         DB.write(() => {
           newPreference = DB.create('Preference', data);
