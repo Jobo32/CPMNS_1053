@@ -126,7 +126,7 @@
             this.idCatastrophe = idCatastrophe.trim()
 
             let gQL = `query{getInfoCatastropheById(idCatastrophe:${this.idCatastrophe}){country cities province area date type{name}}}`
-            console.log(gQL)
+            //console.log(gQL)
             fetch('/graphql?query=' + encodeURIComponent(gQL))
             .then(function(r){return r.json()})
             .then(function(json){
@@ -145,7 +145,7 @@
             fetch('/graphql?query=' + encodeURIComponent(gQL))
             .then(function(r){return r.json()})
             .then(function(json){
-              console.log(json.data.getActionProtocolsByType[0])
+              //console.log(json.data.getActionProtocolsByType[0])
               self.actionprotocol = json.data.getActionProtocolsByType[0] 
             })
             .catch(function(error){console.log(error)})
@@ -233,7 +233,6 @@
                 body: JSON.stringify(query),
             })
             .then(function(r) {
-              
                 return r.json();
             })
             .then(function(json) {
