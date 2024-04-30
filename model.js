@@ -1,6 +1,6 @@
 const Realm = require('realm')
 const app = new Realm.App({id: "cpmns-ikonb"})
-//const { User } = require('realm/dist/bundle')
+
 
 let TypeCatastropheSchema = {
   name: 'TypeCatastrophe',
@@ -90,35 +90,35 @@ let sync = {
 let config = {path: './data/cpmns.realm',sync: sync, schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, PreferenceSchema,UserSchema]}
 
 exports.getDB = async () =>{
-  await Realm.open(config)
+  await app.logIn(new Realm.Credentials.anonymous())
   return await Realm.open(config)
 } 
 exports.app = app
+
+exports.getDB = async () => await Realm.open(config)
 
 // // // // // 
 
 if (process.argv[1] == __filename){ //TESTING PART
 
   if (process.argv.includes("--create")){ //crear la BD
-
+      
       Realm.deleteFile({path: './data/cpmns.realm'}) //borramos base de datos si existe
+      console.log("prueba")
+      app.logIn(Realm.Credentials.anonymous()).then(() =>{
+        let DB = new Realm(config)
 
-      let DB = new Realm({
-        path: './data/cpmns.realm',
-        schema: [CatastropheSchema,TypeCatastropheSchema,ActionProtocolSchema,InsuranceCompanySchema, PreferenceSchema, UserSchema]
-      })
-     
       DB.write(() => {
         let typeCatastrophe1 = DB.create('TypeCatastrophe', {
-                                          id: Realm.BSON.ObjectId(),
+                                          _id: Realm.BSON.ObjectId(),
                                           name: 'Terremoto',
                                           description: 'Un movimiento brusco de la Tierra causado por la liberación de energía acumulada debido a tensiones geológicas.'});
         let typeCatastrophe2 = DB.create('TypeCatastrophe', {
-                                          id: Realm.BSON.ObjectId(),
+                                          _id: Realm.BSON.ObjectId(),
                                           name: 'Tsunami',
                                           description: 'Un tsunami es una serie de olas marinas generadas por un evento perturbador' });
         let catastrophe = DB.create('Catastrophe', {
-                                id: Realm.BSON.ObjectId(),
+                                _id: Realm.BSON.ObjectId(),
                                 country: 'España',
                                 city: 'Castellón de la Plana',
                                 province: 'Castellón',
@@ -128,39 +128,39 @@ if (process.argv[1] == __filename){ //TESTING PART
                                 date: '2024-03-11T18:02:59+01:00' });// La fecha y hora actual
 
         let actionProtocol = DB.create('ActionProtocol', {
-                                id: Realm.BSON.ObjectId(),
+                                _id: Realm.BSON.ObjectId(),
                                 name: 'Protocolo1',
                                 type: typeCatastrophe1, // Referenciamos el objeto TypeCatastrophe creado previamente
                                 description: 'Descripción Test1' } );
 
         let actionProtocol2 = DB.create('ActionProtocol', {
-                                id: Realm.BSON.ObjectId(), // ID único del nuevo protocolo
+                                _id: Realm.BSON.ObjectId(), // ID único del nuevo protocolo
                                 name: 'Nuevo Protocolo', // Nombre del nuevo protocolo
                                 type: typeCatastrophe1, // Tipo de catástrofe asociado al nuevo protocolo
                                 description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
                                 });
                                 
          let actionProtocol3 = DB.create('ActionProtocol', {
-                                id: Realm.BSON.ObjectId(), // ID único del nuevo protocolo
+                                _id: Realm.BSON.ObjectId(), // ID único del nuevo protocolo
                                 name: 'Nuevo Protocolo', // Nombre del nuevo protocolo
                                 type: typeCatastrophe2, // Tipo de catástrofe asociado al nuevo protocolo
                                 description: 'Descripción del nuevo protocolo' // Descripción del nuevo protocolo
                                 });
                               
         let insuranceCompany = DB.create('InsuranceCompany', {
-                                id: Realm.BSON.ObjectId(),
+                                _id: Realm.BSON.ObjectId(),
                                 type: 'Tipo de compañía', // Asigna el tipo de compañía adecuado
                                 name: 'Nombre de la compañía',
                                 address: 'Dirección de la compañía',
                                 email: 'correo@compania.com' });
         let preferenceSchema = DB.create('Preference',{
-                                id: Realm.BSON.ObjectId(),
+                                _id: Realm.BSON.ObjectId(),
                                 typeCatastrophe: typeCatastrophe1,
                                 province: 'Castellón'
         });
                               
         let userSchema = DB.create('User', {
-                                id: Realm.BSON.ObjectId(),
+                                _id: Realm.BSON.ObjectId(),
                                 address: 'Paseo de la Universidad',
                                 email: 'correo@ejemplo.com' ,
                                 year: '2000',
@@ -170,7 +170,10 @@ if (process.argv[1] == __filename){ //TESTING PART
         console.log('Inserted objects', typeCatastrophe1, catastrophe, actionProtocol, actionProtocol2,actionProtocol3,insuranceCompany, userSchema,preferenceSchema)
       })
       DB.close()
-      process.exit()
+      })
+      
+      
+      //process.exit()
   }
   else { //consultar la BD
 

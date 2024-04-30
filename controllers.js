@@ -30,7 +30,8 @@ const schema = buildSchema(`
   }
   type Mutation{
     createOrReplacePreferencesOfAlert(userId: Int, preferenceId: Int, newProvince: String, idtypeCatastrophe: Int): Preference
-    newCatastropheAlert(id: Int
+    newCatastropheAlert(
+      _id: Int
       country: String
       city: String
       province: String
@@ -40,12 +41,12 @@ const schema = buildSchema(`
       date: String): Catastrophe
   }
   type TypeCatastrophe{
-    id: Int
+    _id: Int
     name: String
     description: String
   }
   type Catastrophe{
-    id: Int
+    _id: Int
     country: String
     city: String
     province: String
@@ -56,27 +57,27 @@ const schema = buildSchema(`
   }
   
   type ActionProtocol {
-    id: Int
+    _id: Int
     name: String
     description: String
     type: TypeCatastrophe
   }
   type InsuranceCompany{
-    id: Int
+    _id: Int
     type: String
     name: String
     address: String
     email: String
   }
   type User{
-    id: Int,
+    _id: Int,
     address: String,
     email: String,
     year: String,
     preferences: [Preference]
   }
   type Preference{
-    id: Int,
+    _id: Int,
     typeCatastrophe: TypeCatastrophe,
     province: String
   }
@@ -102,15 +103,15 @@ const rootValue = {
       return catastrophe;
     },  
     getActionProtocolsByType: ({ typeId }) => {
-      return DB.objects('ActionProtocol').filter(protocol => protocol.type.id === typeId);
+      return DB.objects('ActionProtocol').filter(protocol => protocol.type._id === typeId);
     },
-    newCatastropheAlert: ({ id, country,city, province, cities, idtype, area, date }) => {
+    newCatastropheAlert: ({ country,city, province, cities, idtype, area, date }) => {
       
       let newCatastrophe = null;
       
       // Crear un nuevo objeto de catástrofe con los datos proporcionados
       let data = {
-          id: id,
+          _id: BSON.ObjectId(),
           country: country,
           city: city,
           province: province,
@@ -133,7 +134,7 @@ const rootValue = {
     createOrReplacePreferencesOfAlert: ({userId, preferenceId, newProvince, idtypeCatastrophe}) => {
       let newPreference = null;
       //comprobar si existe en ese user dicha preferencia
-      var usuario = DB.objects('User').filter(user => user.id === userId)
+      var usuario = DB.objects('User').filter(user => user._id === userId)
       var listaDePreferences = usuario[0].preferences
       var existePrefrence = false
       
@@ -146,7 +147,7 @@ const rootValue = {
       if(!existePrefrence){
         
         let data = {
-          id: preferenceId,
+          _id: BSON.ObjectId(),
           typeCatastrophe: DB.objectForPrimaryKey('TypeCatastrophe', idtypeCatastrophe),
           province: newProvince
         }
