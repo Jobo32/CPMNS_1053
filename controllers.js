@@ -1,4 +1,5 @@
 const { graphql, buildSchema } = require('graphql')
+const Realm = require('realm')
 //import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
 
 //import { graphql, buildSchema} from 'graphql'
@@ -6,6 +7,7 @@ const { graphql, buildSchema } = require('graphql')
 //import model from 'model'
 const model = require('./model') //Database
 
+const graph = require('./datosproyecto.json')
 let DB
 
 model.getDB().then(db => {DB = db})
@@ -22,31 +24,30 @@ const schema = buildSchema(`
     actionProtocols: [ActionProtocol]
     typecatastrophe: [TypeCatastrophe]
     users: [User]
+    jsonLD: String
+    getInfoCatastropheById(idCatastrophe: ID!): Catastrophe
     
-    getInfoCatastropheById(idCatastrophe: Int!): Catastrophe
-    
-    getActionProtocolsByType(typeId: Int!): [ActionProtocol]
+    getActionProtocolsByType(typeId: ID!): [ActionProtocol]
     
   }
   type Mutation{
-    createOrReplacePreferencesOfAlert(userId: Int, preferenceId: Int, newProvince: String, idtypeCatastrophe: Int): Preference
+    createOrReplacePreferencesOfAlert(userId: ID, newProvince: String, idtypeCatastrophe: ID): Preference 
     newCatastropheAlert(
-      _id: Int
       country: String
       city: String
       province: String
       cities: [String]
-      idtype: Int
+      idtype: ID
       area: Float
       date: String): Catastrophe
   }
   type TypeCatastrophe{
-    _id: Int
+    _id: ID
     name: String
     description: String
   }
   type Catastrophe{
-    _id: Int
+    _id: ID
     country: String
     city: String
     province: String
@@ -57,27 +58,27 @@ const schema = buildSchema(`
   }
   
   type ActionProtocol {
-    _id: Int
+    _id: ID
     name: String
     description: String
     type: TypeCatastrophe
   }
   type InsuranceCompany{
-    _id: Int
+    _id: ID
     type: String
     name: String
     address: String
     email: String
   }
   type User{
-    _id: Int,
+    _id: ID,
     address: String,
     email: String,
     year: String,
     preferences: [Preference]
   }
   type Preference{
-    _id: Int,
+    _id: ID,
     typeCatastrophe: TypeCatastrophe,
     province: String
   }
@@ -93,7 +94,8 @@ const rootValue = {
 
 
     getInfoCatastropheById: ({ idCatastrophe }) => {
-      const catastrophe = DB.objectForPrimaryKey('Catastrophe', idCatastrophe)
+      const objectID = new Realm.BSON.ObjectId(idCatastrophe)
+      const catastrophe = DB.objectForPrimaryKey('Catastrophe', objectID)
       // Verifica si se encontró la catástrofe
       if (!catastrophe) {
           throw new Error('Catástrofe no encontrada');
@@ -103,20 +105,27 @@ const rootValue = {
       return catastrophe;
     },  
     getActionProtocolsByType: ({ typeId }) => {
-      return DB.objects('ActionProtocol').filter(protocol => protocol.type._id === typeId);
+      const objectID = new Realm.BSON.ObjectId(typeId);
+      console.log(objectID);
+      console.log("--------------------");
+      return DB.objects('ActionProtocol').filter(protocol => {
+          console.log(protocol.type._id);
+          return protocol.type._id.equals(objectID); // Compara los ObjectIds
+      });
+
     },
     newCatastropheAlert: ({ country,city, province, cities, idtype, area, date }) => {
       
       let newCatastrophe = null;
-      
+      const objectID= new Realm.BSON.ObjectId(idtype)
       // Crear un nuevo objeto de catástrofe con los datos proporcionados
       let data = {
-          _id: BSON.ObjectId(),
+          _id: new Realm.BSON.ObjectId(),
           country: country,
           city: city,
           province: province,
           cities: cities,
-          type: DB.objectForPrimaryKey('TypeCatastrophe', idtype), // Obtener el objeto de tipo de catástrofe por su ID
+          type: DB.objectForPrimaryKey('TypeCatastrophe', objectID), // Obtener el objeto de tipo de catástrofe por su ID
           area: area,
           date: date
       };
@@ -131,11 +140,14 @@ const rootValue = {
   
       return newCatastrophe;
     },
-    createOrReplacePreferencesOfAlert: ({userId, preferenceId, newProvince, idtypeCatastrophe}) => {
+    createOrReplacePreferencesOfAlert: ({userId, newProvince, idtypeCatastrophe}) => {
       let newPreference = null;
       //comprobar si existe en ese user dicha preferencia
-      var usuario = DB.objects('User').filter(user => user._id === userId)
-      var listaDePreferences = usuario[0].preferences
+      const userObjectId = new Realm.BSON.ObjectId(userId)
+      const typeObjectId = new Realm.BSON.ObjectId(idtypeCatastrophe)
+      var usuario = DB.objectForPrimaryKey('User', userObjectId)
+      console.log(usuario)
+      var listaDePreferences = usuario.preferences
       var existePrefrence = false
       
       listaDePreferences.forEach(element => {
@@ -147,20 +159,23 @@ const rootValue = {
       if(!existePrefrence){
         
         let data = {
-          _id: BSON.ObjectId(),
-          typeCatastrophe: DB.objectForPrimaryKey('TypeCatastrophe', idtypeCatastrophe),
+          _id: new Realm.BSON.ObjectId(),
+          typeCatastrophe: DB.objectForPrimaryKey('TypeCatastrophe', typeObjectId),
           province: newProvince
         }
         
         DB.write(() => {
           newPreference = DB.create('Preference', data);
-          usuario[0].preferences.push(newPreference)
+          usuario.preferences.push(newPreference)
           
         })
 
       }
       return newPreference;
       
+    }, 
+    jsonLD:()=>{
+      return JSON.stringify(graph)
     }
 }
 

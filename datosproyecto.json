@@ -1,0 +1,85 @@
+{
+  "@context": "https://schema.org/",
+  "@type": "WebAPI",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "David García Royo"
+    },
+    {
+      "@type": "Person",
+      "name": "Javier Mollon Cubell"
+    }
+  ],
+  "provider": {
+    "@type": "Organization",
+    "name": "CPMNS"
+  },
+  "service": {
+    "@type": "Service",
+    "description": "Información sobre Catastrofes Naturales, Protocolos de Actuación, ...",
+    "data": {
+      "@type": "Catastrophe",
+      "identifier": "123456",
+      "areaServed": {
+        "@type": "AdministrativeArea",
+        "name": "Jalisco",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "México",
+          "addressLocality": "Guadalajara"
+        }
+      },
+      "dateModified": "2024-04-30T12:00:00Z",
+      "type": "Enumeration",
+      "typeIdentifier": "7890",
+      "typeName": "Terremoto",
+      "typeDescription": "Movimiento sísmico de gran magnitud",
+      "protocol": {
+        "@type": "CreativeWork",
+        "identifier": "ABCDE",
+        "name": "Protocolo de emergencia ante terremotos",
+        "description": "Instrucciones detalladas sobre cómo actuar antes, durante y después de un terremoto"
+      },
+      "insuranceCompany": {
+        "@type": "Organization",
+        "identifier": "FGHIJ",
+        "type": "Seguro de daños",
+        "name": "Seguros del Valle",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Av. Insurgentes Sur 123",
+          "addressLocality": "Ciudad de México"
+        },
+        "email": "contacto@segurosdelvalle.com"
+      },
+      "user": {
+        "@type": "Person",
+        "identifier": "KLMNO",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Calle 123",
+          "addressLocality": "Monterrey"
+        },
+        "email": "usuario@example.com",
+        "birthDate": "1990",
+        "preferences": [
+          {
+            "@type": "Thing",
+            "identifier": "PQRST",
+            "type": "Enumeration",
+            "typeIdentifier": "UVWXY",
+            "typeName": "Inundación",
+            "typeDescription": "Desbordamiento de ríos o acumulación de agua",
+            "areaServed": {
+              "@type": "AdministrativeArea",
+              "name": "Nuevo León"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+
+
